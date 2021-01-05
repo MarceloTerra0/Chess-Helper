@@ -1,0 +1,1 @@
+Um programa com o intuito de ajudar o jogador a visualizar quais regiões do tabuleiro estão sendo dominadas pelo oponente/pelo jogador
