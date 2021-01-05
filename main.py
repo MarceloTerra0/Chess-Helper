@@ -1,6 +1,9 @@
 #lowercase = black
+
+
 import pygame
 import chess
+from stockfish import Stockfish
 
 import os
 
@@ -34,6 +37,10 @@ board = chess.Board()
 #move = chess.Move.from_uci("d2d4")
 #board.push(move)
 
+#stockfish = Stockfish(os.path.join("stockfish", "stockfish_20090216_x64"))
+#stockfish.set_fen_position(board.fen())
+#print(stockfish.get_best_move())
+
 def updateWindow():
     pygame.display.update()
 
@@ -45,39 +52,39 @@ def drawSquares(win, tiles):
 
 def drawPieces(win, board):
     tabuleiro = board.fen().split()[0].split('/')
-    for row,piece in enumerate(tabuleiro):
+    for rows,row in enumerate(tabuleiro):
         column = 0
-        for i in range(len(piece)):
+        for piece in row:
             try:
-                num = int(piece[i])
+                num = int(piece)
                 column+=num
             except:
                 
-                if piece[i] == 'r':
-                    win.blit(br, (column *100, row*100))
-                if piece[i] == 'n':
-                    win.blit(bn, (column *100, row*100))
-                if piece[i] == 'b':
-                    win.blit(bb, (column *100, row*100))
-                if piece[i] == 'q':
-                    win.blit(bq, (column *100, row*100))
-                if piece[i] == 'k':
-                    win.blit(bk, (column *100, row*100))
-                if piece[i] == 'p':
-                    win.blit(bp, (column *100, row*100))
+                if piece == 'r':
+                    win.blit(br, (column *100, rows*100))
+                if piece == 'n':
+                    win.blit(bn, (column *100, rows*100))
+                if piece == 'b':
+                    win.blit(bb, (column *100, rows*100))
+                if piece == 'q':
+                    win.blit(bq, (column *100, rows*100))
+                if piece == 'k':
+                    win.blit(bk, (column *100, rows*100))
+                if piece == 'p':
+                    win.blit(bp, (column *100, rows*100))
 
-                if piece[i] == 'R':
-                    win.blit(wr, (column *100, row*100))
-                if piece[i] == 'N':
-                    win.blit(wn, (column *100, row*100))
-                if piece[i] == 'B':
-                    win.blit(wb, (column *100, row*100))
-                if piece[i] == 'Q':
-                    win.blit(wq, (column *100, row*100))
-                if piece[i] == 'K':
-                    win.blit(wk, (column *100, row*100))
-                if piece[i] == 'P':
-                    win.blit(wp, (column *100, row*100))
+                if piece == 'R':
+                    win.blit(wr, (column *100, rows*100))
+                if piece == 'N':
+                    win.blit(wn, (column *100, rows*100))
+                if piece == 'B':
+                    win.blit(wb, (column *100, rows*100))
+                if piece == 'Q':
+                    win.blit(wq, (column *100, rows*100))
+                if piece == 'K':
+                    win.blit(wk, (column *100, rows*100))
+                if piece == 'P':
+                    win.blit(wp, (column *100, rows*100))
 
                 column+=1
 
@@ -101,33 +108,85 @@ def showPossibleMoves(win, board):
         pygame.draw.rect(win,(10, 200, 200, 128),((ord(move[2])-97) * 100 + 40, abs( (int(move[3])-8)) * 100 + 40, 20, 20))
     return movelist
 
-def showOpponentDominance(win, board):
-    board.push(chess.Move.null())
-    moves = list(board.legal_moves)
-    board.pop()
-    movelist = []
-    for move in moves:
-        #ignorando pawns, já que a área de dominancia deles não é a mesma que os possíveis movimentos
-        square = move.uci()[:2]
-        piece = board.piece_type_at(chess.parse_square(square))
-        if piece != 1:
-            movelist.append(move.uci())
+def showOpponentPawnDominance(win, board):
+    tabuleiro = board.fen().split()[0].split('/')
+    for rows,row in enumerate(tabuleiro):
+        column = 0
+        for piece in row:
+            try:
+                num = int(piece)
+                column+=num
+            except:
+                if piece == 'p':
+                    #fazer as checagens diagonais dos pawns pretos indo de cima para baixo (8 -> 1)
+                    if rows + 1 < 8:
+                        if column - 1>=0:
+                            pygame.draw.rect(win, (255, 20, 20, 128), ((column - 1) * 100 + 40, (rows + 1) * 100 + 40, 20, 20))
+                        if column + 1 < 8:
+                            pygame.draw.rect(win, (255, 20, 20, 128), ((column + 1) * 100 + 40, (rows + 1) * 100 + 40, 20, 20))
+                column +=1
 
-    pontaEsquerda = True if square[0] == 'a' else False
-    pontaDireita  = True if square[0] == 'h' else False
-    baixo         = True if square[1] == '1' else False
-    cima          = True if square[1] == '8' else False
+def showOpponentPiecesDominance(win, board):
+    #showOpponentPawnDominance(win, board)
 
-    if board.fen().split()[1] == 'w':
-        #fazer as checagens diagonais dos pawns pretos indo de cima para baixo (8 -> 1)
-        tabuleiro = board.fen().split()[0].split('/')
+    b = []
+    for item in board.__str__().split('\n'):
+        string = ''
+        for letter in item:
+            if letter != ' ':
+                    string+=letter
+        b.append(string)
 
-        
-
-    for move in movelist:
-        pygame.draw.rect(win,(255, 20, 20, 128) if board.fen().split()[1] == 'w' else (20, 255, 20, 128),((ord(move[2])-97) * 100 + 40, abs( (int(move[3])-8)) * 100 + 40, 20, 20))
+    for rows, row in enumerate(b):
+        for column in range(8):
+            if row[column] == 'r':
+                #esquerda
+                contador = column
+                while contador > 0:
+                    if row[contador-1] == '.':
+                        contador -= 1
+                        pygame.draw.rect(win, (255, 20, 20, 128), (contador * 100 + 40, rows * 100 + 40, 20, 20))
+                    else:
+                        contador -= 1
+                        pygame.draw.rect(win, (255, 20, 20, 128), (contador * 100 + 40, rows * 100 + 40, 20, 20))
+                        break
+                #direita
+                contador = column
+                while contador < 7:
+                    if row[contador+1] == '.':
+                        contador +=1
+                        pygame.draw.rect(win, (255, 20, 20, 128), (contador * 100 + 40, rows * 100 + 40, 20, 20))
+                    else:
+                        contador +=1
+                        pygame.draw.rect(win, (255, 20, 20, 128), (contador * 100 + 40, rows * 100 + 40, 20, 20))
+                        break
+                #em cima
+                contador = rows
+                while contador > 0:
+                    if b[contador-1][column] == '.':
+                        contador -= 1
+                        pygame.draw.rect(win, (255, 20, 20, 128), (column * 100 + 40, contador * 100 + 40, 20, 20))
+                    else:
+                        contador -= 1
+                        pygame.draw.rect(win, (255, 20, 20, 128), (column * 100 + 40, contador * 100 + 40, 20, 20))
+                        break
+                #em baixo
+                contador = rows
+                while contador < 7:
+                    if b[contador+1][column] == '.':
+                        contador += 1
+                        pygame.draw.rect(win, (255, 20, 20, 128), (column * 100 + 40, contador * 100 + 40, 20, 20))
+                    else:
+                        contador += 1
+                        pygame.draw.rect(win, (255, 20, 20, 128), (column * 100 + 40, contador * 100 + 40, 20, 20))
+                        break
+            
+            #if row[column] == ''
     
-    return movelist
+
+    
+def showOpponentDominance(win, board):
+    showOpponentPiecesDominance(win, board)
 
 tiles = []
 for rows in range(8):
@@ -142,7 +201,11 @@ pecaSelecionada = False
 possiveisMovimentos = []
 movimento = True
 while True:
-
+    #if board.fen().split()[1] == 'b':
+        #stockfish.set_fen_position(board.fen())
+        #print(stockfish.get_best_move())
+        #board.push(chess.Move.from_uci(stockfish.get_best_move()))
+        #board.push(chess.Move.from_uci('0000'))
     drawSquares(win, tiles)
     drawPieces(win, board)
     #showPossibleMovesForPosition(win, board, 'e5')
