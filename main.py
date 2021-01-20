@@ -37,8 +37,9 @@ board = chess.Board()
 #move = chess.Move.from_uci("d2d4")
 #board.push(move)
 
-#stockfish = Stockfish(os.path.join("stockfish", "stockfish_20090216_x64"))
-#stockfish.set_fen_position(board.fen())
+stockfish = Stockfish(os.path.join("stockfish", "stockfish_20090216_x64"), parameters={"Skill Level": 1})
+#stockfish = Stockfish(parameters={"Skill Level": 1})
+stockfish.set_fen_position(board.fen())
 #print(stockfish.get_best_move())
 
 def updateWindow():
@@ -127,7 +128,7 @@ def showOpponentPawnDominance(win, board):
                 column +=1
 
 def showOpponentPiecesDominance(win, board):
-    #showOpponentPawnDominance(win, board)
+    showOpponentPawnDominance(win, board)
 
     b = []
     for item in board.__str__().split('\n'):
@@ -137,9 +138,11 @@ def showOpponentPiecesDominance(win, board):
                     string+=letter
         b.append(string)
 
+    #protegido/ameaçado
     for rows, row in enumerate(b):
         for column in range(8):
-            if row[column] == 'r':
+            
+            if row[column] == 'r':   
                 #esquerda
                 contador = column
                 while contador > 0:
@@ -181,10 +184,212 @@ def showOpponentPiecesDominance(win, board):
                         pygame.draw.rect(win, (255, 20, 20, 128), (column * 100 + 40, contador * 100 + 40, 20, 20))
                         break
             
-            #if row[column] == ''
-    
+            if row[column] == 'n':
+                #esquerda cima - cima
+                if column >= 1 and rows >= 2:
+                    pygame.draw.rect(win, (255, 20, 20, 128), ((column - 1) * 100 + 40, (rows - 2) * 100 + 40, 20, 20))
+                #esquerda cima - baixo
+                if column >= 2 and rows >= 1:
+                    pygame.draw.rect(win, (255, 20, 20, 128), ((column - 2) * 100 + 40, (rows - 1) * 100 + 40, 20, 20))
 
-    
+                #esquerda cima - cima
+                if column >= 1 and rows <= 5:
+                    pygame.draw.rect(win, (255, 20, 20, 128), ((column - 1) * 100 + 40, (rows + 2) * 100 + 40, 20, 20))
+                #esquerda cima - baixo
+                if column >= 2 and rows <= 6:
+                    pygame.draw.rect(win, (255, 20, 20, 128), ((column - 2) * 100 + 40, (rows + 1) * 100 + 40, 20, 20))
+
+                #direita cima - cima
+                if column <= 6 and rows >= 2:
+                    pygame.draw.rect(win, (255, 20, 20, 128), ((column + 1) * 100 + 40, (rows - 2) * 100 + 40, 20, 20))
+                #direita cima - baixo
+                if column <= 5 and rows >= 1:
+                    pygame.draw.rect(win, (255, 20, 20, 128), ((column + 2) * 100 + 40, (rows - 1) * 100 + 40, 20, 20))
+
+                #direita baixo - cima
+                if column <= 6 and rows <= 5:
+                    pygame.draw.rect(win, (255, 20, 20, 128), ((column + 1) * 100 + 40, (rows + 2) * 100 + 40, 20, 20))
+                #direita baixo - baixo
+                if column <= 5 and rows <= 6:
+                    pygame.draw.rect(win, (255, 20, 20, 128), ((column + 2) * 100 + 40, (rows + 1) * 100 + 40, 20, 20))
+            
+            if row[column] == 'b': 
+                #NE
+                contadorCol = column
+                contadorRow = rows
+                while contadorCol > 0 and contadorRow > 0:
+                    if b[contadorRow-1][contadorCol-1] == '.':
+                        contadorRow -= 1
+                        contadorCol -= 1
+                        pygame.draw.rect(win, (255, 20, 20, 128), (contadorCol * 100 + 40, contadorRow * 100 + 40, 20, 20))
+                    else:
+                        contadorRow -= 1
+                        contadorCol -= 1
+                        pygame.draw.rect(win, (255, 20, 20, 128), (contadorCol * 100 + 40, contadorRow * 100 + 40, 20, 20))
+                        break
+                
+                #SW
+                contadorCol = column
+                contadorRow = rows
+                while contadorCol > 0 and contadorRow < 7:
+                    if b[contadorRow+1][contadorCol-1] == '.':
+                        
+                        contadorRow += 1
+                        contadorCol -= 1
+                        pygame.draw.rect(win, (255, 20, 20, 128), (contadorCol * 100 + 40, contadorRow * 100 + 40, 20, 20))
+                    else:
+                        contadorRow += 1
+                        contadorCol -= 1
+                        pygame.draw.rect(win, (255, 20, 20, 128), (contadorCol * 100 + 40, contadorRow * 100 + 40, 20, 20))
+                        break
+                
+                #NW
+                contadorCol = column
+                contadorRow = rows
+                while contadorCol < 7 and contadorRow > 0:
+                    if b[contadorRow-1][contadorCol+1] == '.':
+                        contadorRow -= 1
+                        contadorCol += 1
+                        pygame.draw.rect(win, (255, 20, 20, 128), (contadorCol * 100 + 40, contadorRow * 100 + 40, 20, 20))
+                    else:
+                        contadorRow -= 1
+                        contadorCol += 1
+                        pygame.draw.rect(win, (255, 20, 20, 128), (contadorCol * 100 + 40, contadorRow * 100 + 40, 20, 20))
+                        break
+                #SE
+                contadorCol = column
+                contadorRow = rows
+                while contadorCol < 7 and contadorRow < 7:
+                    if b[contadorRow+1][contadorCol+1] == '.':
+                        contadorRow += 1
+                        contadorCol += 1
+                        pygame.draw.rect(win, (255, 20, 20, 128), (contadorCol * 100 + 40, contadorRow * 100 + 40, 20, 20))
+                    else:
+                        contadorRow += 1
+                        contadorCol += 1
+                        pygame.draw.rect(win, (255, 20, 20, 128), (contadorCol * 100 + 40, contadorRow * 100 + 40, 20, 20))
+                        break
+                 
+            if row[column] == 'q':
+                #NE
+                contadorCol = column
+                contadorRow = rows
+                while contadorCol > 0 and contadorRow > 0:
+                    if b[contadorRow-1][contadorCol-1] == '.':
+                        contadorRow -= 1
+                        contadorCol -= 1
+                        pygame.draw.rect(win, (255, 20, 20, 128), (contadorCol * 100 + 40, contadorRow * 100 + 40, 20, 20))
+                    else:
+                        contadorRow -= 1
+                        contadorCol -= 1
+                        pygame.draw.rect(win, (255, 20, 20, 128), (contadorCol * 100 + 40, contadorRow * 100 + 40, 20, 20))
+                        break
+                
+                #SW
+                contadorCol = column
+                contadorRow = rows
+                while contadorCol > 0 and contadorRow < 7:
+                    if b[contadorRow+1][contadorCol-1] == '.':
+                        
+                        contadorRow += 1
+                        contadorCol -= 1
+                        pygame.draw.rect(win, (255, 20, 20, 128), (contadorCol * 100 + 40, contadorRow * 100 + 40, 20, 20))
+                    else:
+                        contadorRow += 1
+                        contadorCol -= 1
+                        pygame.draw.rect(win, (255, 20, 20, 128), (contadorCol * 100 + 40, contadorRow * 100 + 40, 20, 20))
+                        break
+                
+                #NW
+                contadorCol = column
+                contadorRow = rows
+                while contadorCol < 7 and contadorRow > 0:
+                    if b[contadorRow-1][contadorCol+1] == '.':
+                        contadorRow -= 1
+                        contadorCol += 1
+                        pygame.draw.rect(win, (255, 20, 20, 128), (contadorCol * 100 + 40, contadorRow * 100 + 40, 20, 20))
+                    else:
+                        contadorRow -= 1
+                        contadorCol += 1
+                        pygame.draw.rect(win, (255, 20, 20, 128), (contadorCol * 100 + 40, contadorRow * 100 + 40, 20, 20))
+                        break
+                #SE
+                contadorCol = column
+                contadorRow = rows
+                while contadorCol < 7 and contadorRow < 7:
+                    if b[contadorRow+1][contadorCol+1] == '.':
+                        contadorRow += 1
+                        contadorCol += 1
+                        pygame.draw.rect(win, (255, 20, 20, 128), (contadorCol * 100 + 40, contadorRow * 100 + 40, 20, 20))
+                    else:
+                        contadorRow += 1
+                        contadorCol += 1
+                        pygame.draw.rect(win, (255, 20, 20, 128), (contadorCol * 100 + 40, contadorRow * 100 + 40, 20, 20))
+                        break
+
+                #esquerda
+                contador = column
+                while contador > 0:
+                    if row[contador-1] == '.':
+                        contador -= 1
+                        pygame.draw.rect(win, (255, 20, 20, 128), (contador * 100 + 40, rows * 100 + 40, 20, 20))
+                    else:
+                        contador -= 1
+                        pygame.draw.rect(win, (255, 20, 20, 128), (contador * 100 + 40, rows * 100 + 40, 20, 20))
+                        break
+                #direita
+                contador = column
+                while contador < 7:
+                    if row[contador+1] == '.':
+                        contador +=1
+                        pygame.draw.rect(win, (255, 20, 20, 128), (contador * 100 + 40, rows * 100 + 40, 20, 20))
+                    else:
+                        contador +=1
+                        pygame.draw.rect(win, (255, 20, 20, 128), (contador * 100 + 40, rows * 100 + 40, 20, 20))
+                        break
+                #em cima
+                contador = rows
+                while contador > 0:
+                    if b[contador-1][column] == '.':
+                        contador -= 1
+                        pygame.draw.rect(win, (255, 20, 20, 128), (column * 100 + 40, contador * 100 + 40, 20, 20))
+                    else:
+                        contador -= 1
+                        pygame.draw.rect(win, (255, 20, 20, 128), (column * 100 + 40, contador * 100 + 40, 20, 20))
+                        break
+                #em baixo
+                contador = rows
+                while contador < 7:
+                    if b[contador+1][column] == '.':
+                        contador += 1
+                        pygame.draw.rect(win, (255, 20, 20, 128), (column * 100 + 40, contador * 100 + 40, 20, 20))
+                    else:
+                        contador += 1
+                        pygame.draw.rect(win, (255, 20, 20, 128), (column * 100 + 40, contador * 100 + 40, 20, 20))
+                        break
+            
+            if row[column] == 'k':
+                #N
+                if rows > 0:
+                    pygame.draw.rect(win, (255, 20, 20, 128), (column * 100 + 40, (rows - 1) * 100 + 40, 20, 20))
+                #E
+                if column < 7:
+                    pygame.draw.rect(win, (255, 20, 20, 128), ((column + 1) * 100 + 40, rows * 100 + 40, 20, 20))
+                #W
+                if column > 0:
+                    pygame.draw.rect(win, (255, 20, 20, 128), ((column - 1) * 100 + 40, rows * 100 + 40, 20, 20))
+                #S
+                if rows < 7:
+                    pygame.draw.rect(win, (255, 20, 20, 128), (column * 100 + 40, (rows + 1) * 100 + 40, 20, 20))
+                if rows > 0 and column > 0:
+                    pygame.draw.rect(win, (255, 20, 20, 128), ((column - 1) * 100 + 40, (rows - 1) * 100 + 40, 20, 20))
+                if rows > 0 and column < 7:
+                    pygame.draw.rect(win, (255, 20, 20, 128), ((column - 1) * 100 + 40, (rows + 1) * 100 + 40, 20, 20))
+                if rows < 7 and column > 0:
+                    pygame.draw.rect(win, (255, 20, 20, 128), ((column + 1) * 100 + 40, (rows - 1) * 100 + 40, 20, 20))
+                if rows < 7 and column < 7:
+                    pygame.draw.rect(win, (255, 20, 20, 128), ((column + 1) * 100 + 40, (rows + 1) * 100 + 40, 20, 20))
+            
 def showOpponentDominance(win, board):
     showOpponentPiecesDominance(win, board)
 
@@ -201,10 +406,10 @@ pecaSelecionada = False
 possiveisMovimentos = []
 movimento = True
 while True:
-    #if board.fen().split()[1] == 'b':
-        #stockfish.set_fen_position(board.fen())
-        #print(stockfish.get_best_move())
-        #board.push(chess.Move.from_uci(stockfish.get_best_move()))
+    if board.fen().split()[1] == 'b':
+        stockfish.set_fen_position(board.fen())
+        print(stockfish.get_best_move())
+        board.push(chess.Move.from_uci(stockfish.get_best_move()))
         #board.push(chess.Move.from_uci('0000'))
     drawSquares(win, tiles)
     drawPieces(win, board)
